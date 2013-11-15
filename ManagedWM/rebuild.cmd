@@ -1,0 +1,1 @@
+ilasm /DLL ManagedWM.il
