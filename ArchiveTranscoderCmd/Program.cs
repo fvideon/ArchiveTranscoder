@@ -13,6 +13,7 @@ namespace ArchiveTranscoderCmd {
         private static ManualResetEvent m_JobCompleteEvent;
         private static bool m_MakeMobileVersion = false;
         private static bool m_Test = false;
+        private static string m_Profile = null;
         private static string m_JobFile;
         private static string m_PreviousStatusMessage;
 
@@ -36,7 +37,11 @@ namespace ArchiveTranscoderCmd {
             }
 
             if (m_MakeMobileVersion) {
-                MakeMobileBatch(batch);
+                errMsg = MakeMobileBatch(batch);
+                if (errMsg != null) {
+                    ShowUsage(errMsg);
+                    return 7;
+                }
             }
 
             ArchiveTranscoder.ArchiveTranscoder transcoder = new ArchiveTranscoder.ArchiveTranscoder();
@@ -115,6 +120,15 @@ namespace ArchiveTranscoderCmd {
                 job.Target[0].Type = "stream";
                 job.Target[0].CreateAsx = "False";
                 job.Target[0].CreateWbv = "False";
+                if (m_Profile != null) {
+                    FileInfo oldProfile = new FileInfo(job.WMProfile);
+                    string newProfile = Path.Combine(oldProfile.DirectoryName, m_Profile + ".prx");
+                    if (!File.Exists(newProfile)) {
+                        return "Failed to find requested encoding profile: " + newProfile;
+                    }
+                    job.WMProfile = newProfile;
+                }
+                
      
                 foreach (ArchiveTranscoderJobSegment segment in job.Segment) {
                     segment.VideoDescriptor = null;
@@ -144,7 +158,7 @@ namespace ArchiveTranscoderCmd {
             // Note: feed Getopt a string list of flag characters.  A character followed by a colon causes it to 
             // consume two args, placing the second in the Optarg property.
             // For example: "sa:v:" correctly parses "-s -a 3 -v 2"
-            while ((c = go.Getopt(args.Length - 1, args, "mt")) != '\0') {
+            while ((c = go.Getopt(args.Length - 1, args, "mtp:")) != '\0') {
                 //Console.WriteLine("Getopt returned '{0}'", c);
                 switch (c) {
                     case 'm':
@@ -153,6 +167,9 @@ namespace ArchiveTranscoderCmd {
                         break;
                     case 't':
                         m_Test = true;
+                        break;
+                    case 'p':
+                        m_Profile = go.Optarg;
                         break;
                     case '?':
                         return "Illegal or missing argument";
@@ -164,6 +181,10 @@ namespace ArchiveTranscoderCmd {
             //Anything left over triggers an error too:
             if (go.Optarg != "") {
                 return "Unexpected arguments: " + go.Optarg;
+            }
+
+            if ((m_Profile != null) && (!m_MakeMobileVersion)) {
+                return "-p is only allowed with -m";
             }
 
             return null;
@@ -186,9 +207,10 @@ namespace ArchiveTranscoderCmd {
             String exeName = Path.GetFileName(a.Location);
             string baseName = Path.GetFileNameWithoutExtension(a.Location);
             Console.WriteLine(msg);
-            Console.WriteLine("Usage: " + exeName + " [-m] [-t] job.xml");
+            Console.WriteLine("Usage: " + exeName + " [-m [-p 'profile name']] [-t] job.xml");
             Console.WriteLine("  If -m, the tool will convert job parameters such that the video will be " +
-                "created from the presentation stream (slides and ink).  The supplied xml file will not be modified.");
+                "created from the presentation stream (slides and ink).  The supplied xml file will not be modified."); 
+            Console.WriteLine("  If -p, use the named encoding profile for the video created from presentation stream.");
             Console.WriteLine("  If -t, run unit tests.");
 
         }
