@@ -193,7 +193,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <Content Include="App.ico" />
     <Compile Include="ArchiveTranscoderForm.cs">
       <SubType>Form</SubType>
