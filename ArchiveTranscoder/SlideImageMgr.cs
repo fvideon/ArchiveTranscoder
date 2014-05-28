@@ -30,15 +30,19 @@ namespace ArchiveTranscoder
         private Hashtable orgToResource;        //key is the organization ID, value is the resource ID.  For RTDocuments scenarios.
         private SlideImage nullSlide;           //For the purpose of generating a blank image if we need one
         private CP3Manager.CP3Manager cp3Mgr;   //For translating a CP3 message stream.
+        private int exportHeight = 0;
+        private int exportWidth = 0;
 
         #endregion Members
 
         #region Construct
 
-        public SlideImageMgr(PresenterWireFormatType format)
+        public SlideImageMgr(PresenterWireFormatType format, int width, int height)
         {
             this.format = format;
             currentSlide = new SlideReference();
+            this.exportWidth = width;
+            this.exportHeight = height;
             
             //Set the default background colors
             if ((format == PresenterWireFormatType.CPCapability) ||
@@ -179,7 +183,7 @@ namespace ArchiveTranscoder
 
             if ((currentSlide.IsSet) && (slideImages.ContainsKey(currentSlide.GetStringHashCode())))
             {
-                frame = ((SlideImage)slideImages[currentSlide.GetStringHashCode()]).GenerateFrame(currentSlide.Size, currentSlide.BGColor);
+                frame = ((SlideImage)slideImages[currentSlide.GetStringHashCode()]).GenerateFrame(currentSlide.Size, currentSlide.BGColor, this.exportWidth, this.exportHeight);
             }
             else
             {
@@ -189,7 +193,7 @@ namespace ArchiveTranscoder
                     nullSlide = new SlideImage();
                 }
 
-                frame = nullSlide.GenerateFrame(1.0,Color.PapayaWhip);
+                frame = nullSlide.GenerateFrame(1.0,Color.PapayaWhip, this.exportWidth, this.exportHeight);
             }
             
         }

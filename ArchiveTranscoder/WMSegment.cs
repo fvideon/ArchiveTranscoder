@@ -267,7 +267,7 @@ namespace ArchiveTranscoder
 
             if (useSlideStream)
             {
-                slideStream = new SlideStreamMgr(job, segment, logMgr, 29.97); //Using slides in place of the video
+                slideStream = new SlideStreamMgr(job, segment, logMgr, 29.97, writer.FrameWidth, writer.FrameHeight); //Using slides in place of the video
             }
             else
             {

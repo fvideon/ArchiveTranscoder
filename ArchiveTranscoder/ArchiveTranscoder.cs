@@ -1019,10 +1019,10 @@ namespace ArchiveTranscoder
                     //Make slide images, and package output
                     if ((errMsg == null) && (!endWorkThread)) {
                         if (pStreamWriter != null) {
-                            //PRI1: make SlideImageGenerator also accept a hashtable of CP broadcast slide images.
                             slideImageGenerator = SlideImageGenerator.GetInstance(job, progressTracker, jobLog);
                             slideImageGenerator.TheRtDocuments = this.rtDocuments;
                             slideImageGenerator.TheSlideMessages = this.slideMessages;
+                            slideImageGenerator.SetImageExportSize(true, 0, 0);
                             slideImageGenerator.Process();
                         }
                         if (!endWorkThread)

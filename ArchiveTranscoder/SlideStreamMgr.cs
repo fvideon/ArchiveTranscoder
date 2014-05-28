@@ -22,18 +22,10 @@ namespace ArchiveTranscoder
     /// for the current frame at the interval appropriate to enforce the requested frame rate.
     /// </summary>
     class SlideStreamMgr:IDisposable {
-        #region Static
-
-        /// <summary>
-        /// Since multiple segments are likely to use the same set of images, just build all images for a job
-        /// one time only, and keep track of them using a static
-        /// </summary>
-        private static SlideImageGenerator imageGenerator = null;
-
-        #endregion Static
 
         #region Members
 
+        private SlideImageGenerator imageGenerator = null;
         private SlideImageMgr slideImageMgr;
         private ArchiveTranscoderJobSegment segment;
         private ArchiveTranscoderJob job;
@@ -52,6 +44,8 @@ namespace ArchiveTranscoder
         private double lookBehindDuration;
         private long ticksBetweenFrames;
         private long nextFrameTime;
+        private int outputWidth = 320;
+        private int outputHeight = 240;
         
         #endregion Members
 
@@ -72,15 +66,21 @@ namespace ArchiveTranscoder
         #region Ctor
 
         public SlideStreamMgr(ArchiveTranscoderJob job, ArchiveTranscoderJobSegment segment, 
-            LogMgr logMgr, double fps)
+            LogMgr logMgr, double fps, int width, int height)
         {
             this.job = job;
             this.segment = segment;
             this.logMgr = logMgr;
+            
+            if (width > 0 && height > 0)
+            {
+                this.outputWidth = width;
+                this.outputHeight = height;
+            }
 
             this.ticksBetweenFrames = (long)((double)Constants.TicksPerSec / fps);
 
-            uncompressedMT = getUncompressedMT(320,240,fps);
+            uncompressedMT = getUncompressedMT(this.outputWidth, this.outputHeight, fps);
             cancel = false;
             initialized = false;
             pptInstalled = Utility.CheckPptIsInstalled();
@@ -97,7 +97,7 @@ namespace ArchiveTranscoder
             payload = Utility.formatToPayload(format);
             cname = segment.PresentationDescriptor.PresentationCname;
 
-            slideImageMgr = new SlideImageMgr(format);
+            slideImageMgr = new SlideImageMgr(format, this.outputWidth, this.outputHeight);
 
             //Get the start time for the entire conference and use that to get streams.
             long confStart = DatabaseUtility.GetConferenceStartTime(payload, cname, start.Ticks, end.Ticks);
@@ -171,12 +171,13 @@ namespace ArchiveTranscoder
             int oldEnd = progressTracker.EndValue;
 
             //build directories from any decks specified in the job
-            if (imageGenerator == null) {
-                imageGenerator = SlideImageGenerator.GetInstance(this.job, progressTracker, logMgr);
-            }
-            //Refresh the job in case it has changed since the SlideImageGenerator was created.
+            imageGenerator = SlideImageGenerator.GetInstance(this.job, progressTracker, logMgr);
+
+            //Refresh image export size and job in case they have changed.
+            imageGenerator.SetImageExportSize(false, this.outputWidth, this.outputHeight);
             imageGenerator.Job = this.job;
-            //Run process in case there are any new decks to generate.
+
+            //Run process to build or refresh deck images.
             imageGenerator.Process();
 
             //Tell SlideImageMgr about the decks.

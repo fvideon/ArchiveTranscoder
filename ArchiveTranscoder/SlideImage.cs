@@ -282,7 +282,7 @@ namespace ArchiveTranscoder
         /// <param name="size"></param>
         /// <param name="bgColor"></param>
         /// <returns></returns>
-        public BufferChunk GenerateFrame(double size, Color bgColor)
+        public BufferChunk GenerateFrame(double size, Color bgColor, int exportWidth, int exportHeight)
         {
 
             //If there have been no changes since we built the last bitmap, just return it:
@@ -325,7 +325,7 @@ namespace ArchiveTranscoder
             }
 
 
-            rawCompositeImage = buildRawImage(slideBitmap, size, bgColor);
+            rawCompositeImage = buildRawImage(slideBitmap, size, bgColor, exportWidth, exportHeight);
 
             if (rawCompositeImage != null)
             {
@@ -496,7 +496,7 @@ namespace ArchiveTranscoder
         /// <param name="slideImage"></param>
         /// <param name="ink"></param>
         /// <returns></returns>
-        private byte[] buildRawImage(Bitmap slideImage, double size, Color bgColor)
+        private byte[] buildRawImage(Bitmap slideImage, double size, Color bgColor, int exportWidth, int exportHeight)
         {
             if (slideImage == null)
                 throw new ApplicationException("Slide Image must not be null.");
@@ -528,12 +528,46 @@ namespace ArchiveTranscoder
             //WMFSDK wants the picture upside down:
             img.RotateFlip(RotateFlipType.RotateNoneFlipY);
 
-            //GetThumbnailImage produces a nice scaled image.
-            Bitmap bm = new Bitmap(img.GetThumbnailImage(320, 240, new Image.GetThumbnailImageAbort(abortCallback), IntPtr.Zero));
-            img.Dispose();
+            Bitmap bm; 
+
+            if ((exportWidth == img.Width) && (exportHeight == img.Height))
+            {
+                //No scaling needed.  Ideally this will be the common case.
+                bm = (Bitmap)img;
+            }
+            else if ((exportWidth == 0) || (exportHeight == 0) ||
+                    (exportWidth == 320 && exportHeight == 240)) {
+                //Export width or height not specified or 320x240.  Export default width and height.
+                //GetThumbnailImage produces a nice scaled image up to about 320x240.
+                bm = new Bitmap(img.GetThumbnailImage(320, 240, new Image.GetThumbnailImageAbort(abortCallback), IntPtr.Zero));
+                img.Dispose();            
+            }
+            else
+            {
+                bm = scaleFullImage(img, exportWidth, exportHeight, Color.White);
+            }
 
             //Generate the raw bitmap.
             return imageToRawBitmap(bm);
+        }
+
+        /// <summary>
+        /// Scale the image to a new size and return it.  Dispose of the original.
+        /// </summary>
+        private Bitmap scaleFullImage(Image img, int newWidth, int newHeight, Color bgColor)
+        {
+            //Make a blank image of the new size
+            Bitmap newImage = new Bitmap(newWidth, newHeight);
+
+            Graphics g = Graphics.FromImage(newImage);
+            GraphicsUnit gu = GraphicsUnit.Pixel;
+
+            //scale the original image and draw it on the blank image
+            RectangleF destRect = new RectangleF(0, 0, (float)newWidth, (float)newHeight);
+            g.DrawImage(img, newImage.GetBounds(ref gu), img.GetBounds(ref gu), GraphicsUnit.Pixel);
+            img.Dispose();
+            g.Dispose();
+            return newImage;
         }
 
         private void addDynamicImages(Image img, double size) {
@@ -844,12 +878,12 @@ namespace ArchiveTranscoder
         {
             //convert pixel format to RGB24
             //Should we check to make sure it isn't already?
-            Bitmap rgbbm = img.Clone(new Rectangle(0, 0, 320, 240), PixelFormat.Format24bppRgb);
+            Bitmap rgbbm = img.Clone(new Rectangle(0, 0, img.Width, img.Height), PixelFormat.Format24bppRgb);
             int bytesPerPixel = 3;
 
             //Extract a byte[] from the Bitmap
-            BitmapData bd = rgbbm.LockBits(new Rectangle(0, 0, 320, 240), ImageLockMode.ReadOnly, rgbbm.PixelFormat);
-            int cbuf = 320 * 240 * bytesPerPixel;
+            BitmapData bd = rgbbm.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.ReadOnly, rgbbm.PixelFormat);
+            int cbuf = img.Width * img.Height * bytesPerPixel;
             byte[] rawdata = new byte[cbuf];
             Marshal.Copy(bd.Scan0, rawdata, 0, cbuf);
             rgbbm.UnlockBits(bd);

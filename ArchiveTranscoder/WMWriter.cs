@@ -33,6 +33,27 @@ namespace ArchiveTranscoder
 					return false;
 			}
 		}
+
+        /// <summary>
+        /// Video width defined by the output compression profile.
+        /// Valid only after calling ConfigProfile when writing 
+        /// uncompressed samples.
+        /// </summary>
+        public int FrameWidth
+        {
+            get { return this.frameWidth; }
+        }
+
+        /// <summary>
+        /// Video height defined by the output compression profile.
+        /// Valid only after calling ConfigProfile when writing 
+        /// uncompressed samples.
+        /// </summary>        
+        public int FrameHeight
+        {
+            get { return this.frameHeight; }
+        }
+
 		#endregion
 
 		#region Members
@@ -52,6 +73,8 @@ namespace ArchiveTranscoder
 		private ushort					scriptStreamNumber;	//	.. presentation script (unused for now)
 		private bool					writeFailed;		//Flags that a write excepted since last checked.
 		private	uint					scriptBitrate;		//Unused
+        private int frameWidth;  // Size of output video frame. Valid when writing uncompressed samples,
+        private int frameHeight; //     only after call to ConfigProfile
 		
 		#endregion Members
 
@@ -73,6 +96,8 @@ namespace ArchiveTranscoder
 			scriptStreamNumber = 0;
 			writeFailed = false;
 			scriptBitrate = 0;
+            frameWidth = 0;
+            frameHeight = 0;
 		}
 
 		#endregion
@@ -233,6 +258,11 @@ namespace ArchiveTranscoder
 				else if (WMGuids.ToGuid(streamType) == WMGuids.WMMEDIATYPE_Video)
 				{
 					streamConfig.GetStreamNumber(out videoStreamNum);
+                    
+                    byte[] codecData;
+                    MediaType mt = GetStreamConfigMediaType(streamConfig, PayloadType.dynamicVideo, out codecData);
+                    this.frameWidth = ((MediaTypeVideoInfo)mt).VideoInfo.Target.right;
+                    this.frameHeight = ((MediaTypeVideoInfo)mt).VideoInfo.Target.bottom;
 				}
 
 			}

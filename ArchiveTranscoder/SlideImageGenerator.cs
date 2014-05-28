@@ -79,6 +79,9 @@ namespace ArchiveTranscoder
         private int rightShift = 0;
         private bool useNativeJpegExport = false;
         private bool usePPTImageExport = false;
+        private bool useDefaultSize = true;
+        private int imageWidth = 0;
+        private int imageHeight = 0;
 
 		#endregion Members
 
@@ -188,6 +191,52 @@ namespace ArchiveTranscoder
 		#endregion Ctor/Dtor
 
 		#region Public Methods
+
+        /// <summary>
+        /// Call this before calling Process.  If the size changes between calls to 
+        /// Process, it will rebuild the decks to the new size.  If useDefault is set
+        /// width and height are ignored.
+        /// 
+        /// Note: Custom size is only supported for the default CP3 export.
+        /// </summary>
+        /// <param name="useDefault"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        public void SetImageExportSize(bool useDefault, int width, int height)
+        {
+            if (useDefault)
+            {
+                if (this.useDefaultSize)
+                {
+                    // no change.
+                    return;
+                }
+                else
+                {
+                    this.useDefaultSize = true;
+                    this.imageWidth = 0;
+                    this.imageHeight = 0;
+                    clearOutputDirs();
+                }
+            }
+            else
+            {
+                if ((!this.useDefaultSize) &&
+                    (width == this.imageWidth) &&
+                    (height == this.imageHeight))
+                {
+                    // no change.
+                    return;
+                }
+                else
+                {
+                    this.useDefaultSize = false;
+                    this.imageWidth = width;
+                    this.imageHeight = height;
+                    clearOutputDirs();
+                }
+            }
+        }
 
 		/// <summary>
 		/// Stop the Process method if it is running
@@ -351,6 +400,15 @@ namespace ArchiveTranscoder
 		#endregion Public Methods
 
 		#region Private Methods
+
+        private void clearOutputDirs()
+        {
+            foreach (String s in this.outputDirs.Values)
+            {
+                Directory.Delete(s, true);
+            }
+            this.outputDirs.Clear();
+        }
 
         private void processSlideMessage(WorkSpace.SlideMessage sm)
         {
@@ -664,8 +722,20 @@ namespace ArchiveTranscoder
                 if (stopNow)
                     return;
 
-                List<string> imageNames = UW.ClassroomPresenter.Decks.PPTDeckIO.ExportDeck(traversal, 
-                    tempDirName, ImageFormat.Jpeg);
+                 
+                List<string> imageNames;
+
+                if (this.useDefaultSize)
+                {
+                    imageNames = UW.ClassroomPresenter.Decks.PPTDeckIO.ExportDeck(traversal,
+                        tempDirName, ImageFormat.Jpeg);
+                }
+                else
+                {
+                    Console.WriteLine("Exporting deck with custom size: " + this.imageWidth.ToString() + "x" + this.imageHeight.ToString());
+                    imageNames = UW.ClassroomPresenter.Decks.PPTDeckIO.ExportDeck(traversal,
+                                            tempDirName, ImageFormat.Jpeg,this.imageWidth, this.imageHeight, 1.0f);
+                }
 
                 fixSlideImageNames(tempDirName);
 
