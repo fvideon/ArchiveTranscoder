@@ -193,8 +193,8 @@ namespace ArchiveTranscoder
             this.listBoxDecks.Name = "listBoxDecks";
             this.listBoxDecks.Size = new System.Drawing.Size(496, 95);
             this.listBoxDecks.TabIndex = 5;
-            this.listBoxDecks.DoubleClick += new System.EventHandler(this.listBoxDecks_DoubleClick);
             this.listBoxDecks.SelectedIndexChanged += new System.EventHandler(this.listBoxDecks_SelectedIndexChanged);
+            this.listBoxDecks.DoubleClick += new System.EventHandler(this.listBoxDecks_DoubleClick);
             // 
             // label1
             // 
@@ -251,7 +251,7 @@ namespace ArchiveTranscoder
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.Filter = "PPT files|*.ppt|PPTX files|*.pptx|CP3 files|*.cp3|CSD files|*.csd";
+            this.openFileDialog1.Filter = "PowerPoint Files|*.ppt;*.pptx|CP3 files|*.cp3|CSD files|*.csd";
             // 
             // buttonRemove
             // 
@@ -459,7 +459,7 @@ namespace ArchiveTranscoder
 			this.openFileDialog1.Title = "Select Matching Deck";
 			if (pptInstalled)
 			{
-                this.openFileDialog1.Filter = "PPT files|*.ppt|PPTX files|*.pptx|CP3 files|*.cp3|CSD files|*.csd";
+                this.openFileDialog1.Filter = "PowerPoint files|*.ppt;*.pptx|CP3 files|*.cp3|CSD files|*.csd";
 			}
 			else
 			{
@@ -478,7 +478,7 @@ namespace ArchiveTranscoder
 				this.listBoxDecks.Items.Add(d);
 				this.buttonMatchDeck.Enabled = false;
 				this.buttonRemove.Enabled = false;
-				deckDir = d.Path;
+				deckDir = Path.GetDirectoryName(d.Path);
 			}
 		}
 

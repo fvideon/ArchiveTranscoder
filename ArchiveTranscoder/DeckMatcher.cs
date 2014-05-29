@@ -27,6 +27,7 @@ namespace ArchiveTranscoder
 		private DateTime dtstart;
 		private DateTime dtend;
 		private Hashtable decks;
+        private Hashtable unnamedDecks;
 		private bool autoMatchDone;
 		private Thread autoMatchThread;
 		private Thread analyzeThread;
@@ -251,6 +252,7 @@ namespace ArchiveTranscoder
 		private void AnalyzeThread()
 		{
 			decks.Clear();
+            this.unnamedDecks = new Hashtable();
 			BufferChunk frame;
 			long timestamp;
 
@@ -301,11 +303,23 @@ namespace ArchiveTranscoder
 
 			if ((!stopAnalyze) && (this.OnAnalyzeCompleted != null))
 			{
+                mergeUnnamedDecks();
 				progressTracker.Stop();
 				progressTracker = null;
 				this.OnAnalyzeCompleted();
 			}
 		}
+
+        private void mergeUnnamedDecks() {
+            foreach (Guid g in this.unnamedDecks.Keys) {
+                if (!decks.ContainsKey(g)) {
+                    decks.Add(g, unnamedDecks[g]);
+                    if (this.OnDeckFound != null) {
+                        OnDeckFound((Deck)this.unnamedDecks[g]);
+                    }
+                }
+            }
+        }
 
 
 
@@ -596,7 +610,18 @@ namespace ArchiveTranscoder
                         OnDeckFound(thisDeck);
                     }
                 }
-            }     
+            }
+            else if (m is CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage) {
+                CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage im = (CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage)m;
+                if ((im.Dispositon != UW.ClassroomPresenter.Model.Presentation.DeckDisposition.Whiteboard) && 
+                    (!this.unnamedDecks.ContainsKey(im.DeckId))) {
+                    // This case captures all the decks, including cases where the deck is opened before
+                    // the start of archiving, and there are no slide transitions within the deck, but 
+                    // one slide is shown.  These need to be manually matched since we don't know the deck name.
+                    // At the end of processing we merge these into the main decks collection.
+                    this.unnamedDecks.Add(im.DeckId, new Deck(im.DeckId));
+                }
+            }
         }
 
 
@@ -788,6 +813,16 @@ namespace ArchiveTranscoder
             deckGuid = (Guid)dim.TargetId;
             slideCount = 0;
             fileName = dim.HumanName;
+            slideTitles = null;
+        }
+
+        public Deck(Guid g) {
+            matched = false;
+            matchExt = null;
+            exactMatch = false;
+            deckGuid = g;
+            slideCount = 0;
+            fileName = "Unknown Deck ID:" + g.ToString();
             slideTitles = null;
         }
 
