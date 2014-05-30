@@ -367,9 +367,16 @@ namespace ArchiveTranscoder
 			target.Type = "stream";
 			target.AsxUrl = this.textBoxAsxUrl.Text.Trim();
 			target.CreateAsx = this.checkBoxCreateAsx.Checked.ToString();
-			target.CreateWbv = this.checkBoxCreateWbv.Checked.ToString();
-			target.PresentationUrl = this.textBoxPresentationUrl.Text.Trim();
-			target.SlideBaseUrl = this.textBoxSlideBaseUrl.Text.Trim();
+            if (target.CreateAsx.ToLower().Equals("false")) {
+                target.CreateWbv = "false";
+            }
+            else {
+                target.CreateWbv = this.checkBoxCreateWbv.Checked.ToString();
+            }
+            string purl = this.textBoxPresentationUrl.Text.Trim();
+            target.PresentationUrl = purl.Equals(string.Empty) ? null : purl;
+			string sburl = this.textBoxSlideBaseUrl.Text.Trim();
+            target.SlideBaseUrl = sburl.Equals(string.Empty) ? null : sburl;
 			target.WmvUrl = this.textBoxWmvUrl.Text.Trim();
 			return target;
 		}

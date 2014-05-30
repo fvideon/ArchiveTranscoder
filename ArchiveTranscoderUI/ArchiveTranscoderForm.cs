@@ -990,7 +990,7 @@ namespace ArchiveTranscoder
 					return;
 				}
 				
-				//Make sure we have all the manditory fields
+				//Make sure we have all the mandatory fields
 				String errorMsg;
 				if (!FormDataComplete(out errorMsg))
 				{
