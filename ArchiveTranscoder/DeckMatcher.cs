@@ -613,7 +613,7 @@ namespace ArchiveTranscoder
             }
             else if (m is CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage) {
                 CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage im = (CP3.Network.Messages.Network.InstructorCurrentDeckTraversalChangedMessage)m;
-                if ((im.Dispositon != UW.ClassroomPresenter.Model.Presentation.DeckDisposition.Whiteboard) && 
+                if (((im.Dispositon & UW.ClassroomPresenter.Model.Presentation.DeckDisposition.Whiteboard) == 0) && 
                     (!this.unnamedDecks.ContainsKey(im.DeckId))) {
                     // This case captures all the decks, including cases where the deck is opened before
                     // the start of archiving, and there are no slide transitions within the deck, but 
