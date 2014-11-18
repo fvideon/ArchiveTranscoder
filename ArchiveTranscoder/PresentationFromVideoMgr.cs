@@ -32,7 +32,13 @@ namespace ArchiveTranscoder {
         /// <summary>
         /// If true, scale HD images down by reducing dimensions by half.  If false keep the source image size.
         /// </summary>
-        private const bool SCALE = true;
+        private const bool SCALE = false;
+
+        /// <summary>
+        /// If true, the source is pillarboxed widescreen format from which we should attempt to restore a 
+        /// 4x3 frame dimension.
+        /// </summary>
+        private const bool PILLARBOXED = true;
 
         #endregion Constants
 
@@ -170,6 +176,10 @@ namespace ArchiveTranscoder {
                     else {
                         bm.Save(filepath, ImageFormat.Jpeg);
                     }
+                    if (PILLARBOXED) {
+                        bm = UnPillerBox(bm);
+                        bm.Save(filepath, ImageFormat.Jpeg);
+                    }
                     if (imgFilter != null) {
                         string filterMsg;
                         bool filterError;
@@ -193,6 +203,7 @@ namespace ArchiveTranscoder {
             }
             return null;
         }
+
 
         /// <summary>
         /// specific to sorting files like this "slide1.jpg", "slide2.jpg", "slide10.jpg", etc
@@ -325,6 +336,30 @@ namespace ArchiveTranscoder {
             }
         }
 
+        /// <summary>
+        /// Assume the input bitmap is pillarboxed.  Return a bitmap with 4x3 aspect ratio
+        /// and pillarboxing removed.
+        /// </summary>
+        /// <param name="bm"></param>
+        /// <returns></returns>
+        internal Bitmap UnPillerBox(Bitmap inImg) {
+            if ((float)inImg.Width / (float)inImg.Height <= 4f / 3f) {
+                //Nothing to do
+                return inImg;
+            }
+
+            int midw = inImg.Width / 2;  // Half the width of the original
+            int targetw = inImg.Height * 4 / 3;  // Image width we want in the output
+            int lbb = midw - (targetw / 2);  // The x coordinate of the crop bounding box
+            Rectangle cropR = new Rectangle(lbb, 0, targetw, inImg.Height);
+            Bitmap outImg = new Bitmap(cropR.Width, cropR.Height, inImg.PixelFormat);
+            using (Graphics g = Graphics.FromImage(outImg)) {
+                g.DrawImage(inImg, new Rectangle(0, 0, cropR.Width, cropR.Height), cropR, GraphicsUnit.Pixel);
+            }
+
+            return outImg;
+        }
+
         #endregion Private Methods
                
         #region Filtering Framegrabs
@@ -400,7 +435,16 @@ namespace ArchiveTranscoder {
             }
             return cnt;
         }
-
-    }
     #endregion Filtering
+
+        #region Unit Test
+
+        public static Bitmap TestUnPillarBox(Bitmap bm) {
+            PresentationFromVideoMgr instance = new PresentationFromVideoMgr(null, 0, 0, 0, null, 0, null);
+            return instance.UnPillerBox(bm);
+        }
+        
+        #endregion Unit Test
+    }
+        
 }

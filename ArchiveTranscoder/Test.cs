@@ -4,6 +4,7 @@ using MSR.LST;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Drawing;
 
 namespace ArchiveTranscoder
 {
@@ -78,6 +79,30 @@ namespace ArchiveTranscoder
                 " after duration ticks =" + (lastStreamTime - refTime).ToString());
         }
 
-        #endregion Test Code
+
+
+        internal static void UnPillarBoxTest() {
+            Console.WriteLine("UnPillarbox Test");
+            // Need a sample file to work with:
+            string fn = @"c:\pbtest.jpg";
+            string outfn = @"c:\unpillarboxed.jpg";
+            if (!File.Exists(fn)) {
+                Console.WriteLine(" ! Failed: Input file not found: " + fn);
+                return;
+            }
+            try {
+                Bitmap bm = (Bitmap)Bitmap.FromFile(fn);
+                Bitmap fixedbm = PresentationFromVideoMgr.TestUnPillarBox(bm);
+                fixedbm.Save(outfn);
+            }
+            catch (Exception ex) {
+                Console.WriteLine(" ! Failed: " + ex.ToString());
+                return;
+            }
+            Console.WriteLine(" Look at " + outfn + " to verify correct result.");
+        }
+
+        #endregion Test Code    
+    
     }
 }

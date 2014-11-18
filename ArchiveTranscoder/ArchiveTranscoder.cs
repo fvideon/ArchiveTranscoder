@@ -1854,6 +1854,7 @@ namespace ArchiveTranscoder
         /// </summary>
         public void RunUnitTests() {
             //Test.VerifyStream(48, DateTime.Parse("4/8/2013 8:20:00 PM"), DateTime.Parse("4/8/2013 8:47:36 PM"));
+            Test.UnPillarBoxTest();
         }
 
 
