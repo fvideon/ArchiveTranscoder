@@ -626,7 +626,7 @@ namespace ArchiveTranscoder
 				batch.Job[0].Target[0].Type = "stream";
 				batch.Job[0].WMProfile = "norecompression";
 				batch.Job[0].BaseName = "ArchiveTranscoder_preview";
-				batch.Job[0].Path = Constants.TempPath;
+				batch.Job[0].Path = Constants.TempDirectory;
 				batch.Job[0].Segment = new ArchiveTranscoderJobSegment[1];
 				batch.Job[0].Segment[0] = new ArchiveTranscoderJobSegment();
 				batch.Job[0].Segment[0].VideoDescriptor = this.videoStreamGroup.ToVideoDescriptor();
@@ -655,7 +655,7 @@ namespace ArchiveTranscoder
 
 				transcoder.LoadJobs(batch);
 
-				previewDirPath = Path.Combine(Constants.TempPath,@"ArchiveTranscoder_preview");
+				previewDirPath = Path.Combine(Constants.TempDirectory,@"ArchiveTranscoder_preview");
 				previewFilePath = Path.Combine(previewDirPath,@"stream\ArchiveTranscoder_preview.wmv");
 
 				//register for stop encode and status events

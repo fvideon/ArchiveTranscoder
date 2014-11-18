@@ -174,7 +174,7 @@ namespace ArchiveTranscoder
 		/// <returns></returns>
 		public static String GetTempFilePath(String extent)
 		{
-			String path = Path.Combine(Constants.TempPath,"ArchiveTranscoderTemp");
+			String path = Path.Combine(Constants.TempDirectory,"ArchiveTranscoderTemp");
 			int index = 0;
 			while (File.Exists(path + index.ToString() + "." + extent))
 			{
@@ -192,7 +192,7 @@ namespace ArchiveTranscoder
 		/// <returns></returns>
 		public static String GetTempDir()
 		{
-			String path = Path.Combine(Constants.TempPath, "ArchiveTranscoderTemp");
+			String path = Path.Combine(Constants.TempDirectory, "ArchiveTranscoderTemp");
 			int index = 0;
 			while (Directory.Exists(path + index.ToString()))
 			{
@@ -207,7 +207,7 @@ namespace ArchiveTranscoder
 		/// <returns></returns>
 		public static String GetExistingTempFilesAndDirs()
 		{
-			String path = Constants.TempPath;
+			String path = Constants.TempDirectory;
 			String[] files = Directory.GetFiles(path,"ArchiveTranscoderTemp*");
 			String[] dirs = Directory.GetDirectories(path,"ArchiveTranscoderTemp*");
 			StringBuilder sb = new StringBuilder();
@@ -228,7 +228,7 @@ namespace ArchiveTranscoder
 		/// </summary>
 		public static void DeleteExistingTempFilesAndDirs()
 		{
-			String path = Constants.TempPath;
+			String path = Constants.TempDirectory;
 			String[] files = Directory.GetFiles(path,"ArchiveTranscoderTemp*");
 			String[] dirs = Directory.GetDirectories(path,"ArchiveTranscoderTemp*");
 			foreach (String s in files)

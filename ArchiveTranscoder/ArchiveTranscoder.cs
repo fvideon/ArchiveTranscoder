@@ -1755,21 +1755,21 @@ namespace ArchiveTranscoder
 		}
 
 		/// <summary>
-		/// If Constants.ConnectionStringTemplate contains a {0}, substitute sqlHost in place.  If it contains
-		/// a {1} as well, substitute dbName too.  Otherwise just use Constants.ConnectionStringTemplate as is.
+		/// If Constants.SQLConnectionString contains a {0}, substitute sqlHost in place.  If it contains
+		/// a {1} as well, substitute dbName too.  Otherwise just use Constants.SQLConnectionString as is.
 		/// Write the result to DatabaseUtility.SQLConnectionString.
 		/// </summary>
 		private void resetConnectionString()
 		{
-			if ((Constants.ConnectionStringTemplate.IndexOf("{0}")>=0) &&
-				(Constants.ConnectionStringTemplate.IndexOf("{1}")>=0))
-				DatabaseUtility.SQLConnectionString = String.Format(Constants.ConnectionStringTemplate,sqlHost,dbName);
-			else if (Constants.ConnectionStringTemplate.IndexOf("{0}")>=0)
+			if ((Constants.SQLConnectionString.IndexOf("{0}")>=0) &&
+				(Constants.SQLConnectionString.IndexOf("{1}")>=0))
+				DatabaseUtility.SQLConnectionString = String.Format(Constants.SQLConnectionString,sqlHost,dbName);
+			else if (Constants.SQLConnectionString.IndexOf("{0}")>=0)
 			{
-				DatabaseUtility.SQLConnectionString = String.Format(Constants.ConnectionStringTemplate,sqlHost);		
+				DatabaseUtility.SQLConnectionString = String.Format(Constants.SQLConnectionString,sqlHost);		
 			} 
 			else
-				DatabaseUtility.SQLConnectionString = Constants.ConnectionStringTemplate;
+				DatabaseUtility.SQLConnectionString = Constants.SQLConnectionString;
 		}
 
 		#endregion Misc

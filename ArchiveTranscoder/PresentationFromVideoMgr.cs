@@ -29,17 +29,6 @@ namespace ArchiveTranscoder {
         /// </summary>
         private const double DIFFERENCE_THRESHOLD = 270;
 
-        /// <summary>
-        /// If true, scale HD images down by reducing dimensions by half.  If false keep the source image size.
-        /// </summary>
-        private const bool SCALE = false;
-
-        /// <summary>
-        /// If true, the source is pillarboxed widescreen format from which we should attempt to restore a 
-        /// 4x3 frame dimension.
-        /// </summary>
-        private const bool PILLARBOXED = true;
-
         #endregion Constants
 
         #region Private Members
@@ -167,7 +156,7 @@ namespace ArchiveTranscoder {
                     Marshal.Copy(bc.Buffer, 0, bd.Scan0, bc.Length);
                     bm.UnlockBits(bd);
                     bm.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    if ((SCALE) && (mtvi.VideoInfo.BitmapInfo.Width >= 1280)) {
+                    if ((Constants.ScaleFramegrabs) && (mtvi.VideoInfo.BitmapInfo.Width >= 1280)) {
                         int w = mtvi.VideoInfo.BitmapInfo.Width / 2;
                         int h = mtvi.VideoInfo.BitmapInfo.Height / 2;
                         Bitmap scaled = new Bitmap(bm, new Size(w,h));
@@ -176,7 +165,7 @@ namespace ArchiveTranscoder {
                     else {
                         bm.Save(filepath, ImageFormat.Jpeg);
                     }
-                    if (PILLARBOXED) {
+                    if (Constants.RemovePillarboxing) {
                         bm = UnPillerBox(bm);
                         bm.Save(filepath, ImageFormat.Jpeg);
                     }

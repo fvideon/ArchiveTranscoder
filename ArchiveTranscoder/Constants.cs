@@ -1,5 +1,7 @@
 using System;
 using System.Configuration;
+using System.Reflection;
+using System.Globalization;
 
 namespace ArchiveTranscoder
 {
@@ -8,37 +10,44 @@ namespace ArchiveTranscoder
 	/// </summary>
 	public class Constants
 	{
-		/// <summary>
-		/// A C# static constructor is a special beast.  It is automatically called once for the app domain before the first 
-		/// member access.   Use it here to read a couple of constants from app.config.
-		/// </summary>
-		static Constants()
-		{
-            string temp = ConfigurationManager.AppSettings["SQLConnectionString"];
-			if( temp != null )
-				Constants.ConnectionStringTemplate = temp;
 
-			Constants.TempPath = System.IO.Path.GetTempPath();
-			string tempDir = ConfigurationManager.AppSettings["TempDirectory"];
-			if( tempDir != null )
-			{
-				if (System.IO.Directory.Exists(tempDir))
-				{
-					Constants.TempPath = tempDir;
-				}
-				else
-				{
-					System.Diagnostics.Debug.WriteLine("Specified tempDir does not exist:" + tempDir);
-				}
-			}
-		}
+        static Constants() {
+            Type myType = typeof(Constants);
+            FieldInfo[] fields = myType.GetFields(BindingFlags.Public | BindingFlags.Static);
+            foreach (FieldInfo field in fields) {
+                if (field.IsLiteral) // Is Constant?
+                    continue; // We can't set it
 
-		public static String ConnectionStringTemplate = "Persist Security Info=False;Integrated Security=SSPI;database={1};server={0}";
+                string fullName = field.Name;
+                string configOverride = System.Configuration.ConfigurationManager.AppSettings[fullName];
+                if (configOverride != null && configOverride != String.Empty) {
+                    Type newType = field.FieldType;
+                    object newValue = Convert.ChangeType(configOverride, newType, CultureInfo.InvariantCulture);
+                    field.SetValue(null, newValue);
+                }
+            }
+        }
+
+		//public static String ConnectionStringTemplate = "Persist Security Info=False;Integrated Security=SSPI;database={1};server={0}";
+        public static String SQLConnectionString = "Persist Security Info=False;Integrated Security=SSPI;database={1};server={0}";
+
 		public static readonly int      TicksPerMs = 10000;                                     // handy constant
 		public static readonly int      TicksPerSec = 10000000;                                 // handy constant
 		public static readonly int      PlaybackBufferInterval = 10 * 1000 * TicksPerMs;        // temporal length of buffer, in ms
 		public static readonly String	AppRegKey = "Software\\UW CSE\\ArchiveTranscoder";
-		public static String TempPath = "";
+		
+        public static String TempDirectory = System.IO.Path.GetTempPath();
+
+        /// <summary>
+        /// If true, scale HD images down by reducing dimensions by half.  If false keep the source image size.
+        /// </summary>
+        public static bool ScaleFramegrabs = false;
+
+        /// <summary>
+        /// If true, the source is pillarboxed widescreen format from which we should attempt to restore a 
+        /// 4x3 frame dimension.
+        /// </summary>
+        public static bool RemovePillarboxing = false;
 
 		//Since we are storing DateTime as a string, we need enough precision to avoid roundoff errors
         //public static readonly string dtformat = "M/d/yyyy H:mm:ss.fff";
