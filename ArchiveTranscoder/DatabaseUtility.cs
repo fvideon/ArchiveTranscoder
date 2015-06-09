@@ -249,6 +249,42 @@ namespace ArchiveTranscoder
 			return null;
 		}
 
+        /// <summary>
+        /// Like get streams, but doesn't return the frame count.  It turns out that is the expensive part of the query.
+        /// Consequently this can run a bit faster.
+        /// </summary>
+        public static Stream[] GetStreamsFaster(int participantID) {
+            String query = "SELECT	s.stream_id, s.name, s.payload_type, " +
+		        "( SELECT (MAX( frame_time ) - MIN(frame_time))/10000000 " +
+                     "FROM frame WHERE stream_id = s.stream_id ) as seconds, " +
+		        "( SELECT datalength(data) FROM rawStream WHERE stream_id =  s.stream_id) as bytes " +
+                "FROM stream as s WHERE s.participant_id = " + participantID.ToString() +
+                " AND (SELECT datalength(data) FROM rawStream WHERE stream_id =  s.stream_id) > 1 " +
+                "ORDER BY [name] ASC";
+
+            if (!DatabaseUtility.openAndExecute(query)) {
+                return null;
+            }
+
+            ArrayList al = new ArrayList();
+            try {
+                while (reader.Read()) {
+                    Stream stream = new Stream(
+                        reader.GetInt32(0),  //stream id
+                        reader.GetString(1), // name
+                        reader.GetString(2), // payload,
+                        1000,  // frames
+                        reader.IsDBNull(3) ? 0L : reader.GetInt64(3), // seconds
+                        reader.GetInt32(4)); // bytes
+                    al.Add(stream);
+                }
+            }
+            finally {
+                DatabaseUtility.cleanUpConnection();
+            }
+
+            return (Stream[])al.ToArray(typeof(Stream));
+        }
 		
 		/// <summary>
 		/// Return the array of streams for the given participant ID using the standard ArchiveService SP.

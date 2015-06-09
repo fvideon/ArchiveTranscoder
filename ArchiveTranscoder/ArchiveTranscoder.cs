@@ -1853,8 +1853,8 @@ namespace ArchiveTranscoder
         /// One way to run this is using the -t option to the console app.
         /// </summary>
         public void RunUnitTests() {
-            //Test.VerifyStream(48, DateTime.Parse("4/8/2013 8:20:00 PM"), DateTime.Parse("4/8/2013 8:47:36 PM"));
-            Test.UnPillarBoxTest();
+            Test.VerifyStream(11, DateTime.Parse("2/19/2015 20:36:25.395"), DateTime.Parse("2/19/2015 21:20:50.823"));
+            //Test.UnPillarBoxTest();
         }
 
 

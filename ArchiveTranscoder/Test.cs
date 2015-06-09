@@ -54,21 +54,39 @@ namespace ArchiveTranscoder
             bool keyframe;
             long refTime = 0;
             long lastStreamTime = 0;
- 
+            long timediff = 0;
+            DateTime dt;
             while (streamPlayer.GetNextFrame(out frame, out streamTime)) {
                 try {
                     sample = ProfileUtility.FrameToSample(frame, out keyframe);
                 }
                 catch (Exception ex) {
-                    DateTime dt = new DateTime(streamTime);
+                    dt = new DateTime(streamTime);
                     Console.WriteLine("FrameToSample failed at: " + dt.ToString() + "; Sampletime=" + streamTime.ToString());                    
                     Console.WriteLine(ex.ToString());
                     continue;
                 }
-                if (refTime == 0)
+                if (refTime == 0) 
                     refTime = streamTime;
-                    //DateTime dt = new DateTime(streamTime);
-                    //Console.WriteLine("Sample: " + dt.ToString() + "; Sampletime=" + streamTime.ToString() + "; length=" + sample.Length.ToString());                    Console.WriteLine(ex.ToString());
+
+
+                timediff = streamTime - lastStreamTime;
+
+                // Look for large intervals
+                //if (timediff > 500000L) {
+                //    dt = new DateTime(streamTime);
+                //    Console.WriteLine("Sample: " + dt.ToString() + "; Sampletime=" + streamTime.ToString() + "; length=" + sample.Length.ToString() + ";interval=" + timediff.ToString());
+                //}
+                // Look for large samples
+                //if (sample.Length > 90000) {
+                //    dt = new DateTime(streamTime);
+                //    Console.WriteLine("Sample: " + dt.ToString() + "; Sampletime=" + streamTime.ToString() + "; length=" + sample.Length.ToString() + ";interval=" + timediff.ToString());
+                //}
+                // Look for small samples
+                //if (sample.Length < 300) {
+                //    dt = new DateTime(streamTime);
+                //    Console.WriteLine("Sample: " + dt.ToString() + "; Sampletime=" + streamTime.ToString() + "; length=" + sample.Length.ToString() + ";interval=" + timediff.ToString());
+                //}
 
                 lastStreamTime = streamTime;
             }

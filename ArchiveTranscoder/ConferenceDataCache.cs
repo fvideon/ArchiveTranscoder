@@ -222,7 +222,7 @@ namespace ArchiveTranscoder
 					pw.StreamGrouper = new StreamGrouper(part.CName);
 
 					//Here is the slow part:
-					Stream[] streams = DatabaseUtility.GetStreams(part.ParticipantID);
+					Stream[] streams = DatabaseUtility.GetStreamsFaster(part.ParticipantID);
 					currentParticipant++;
 
 					if (streams==null)

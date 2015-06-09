@@ -527,7 +527,7 @@ namespace ArchiveTranscoder
                         //write audio
                         if (refTime == 0)
                             refTime = audioTime;
-                        //Debug.WriteLine("Write audio: " + (audioTime-refTime).ToString() + ";length=" + audioSample.Length.ToString());
+                        Debug.WriteLine("Write audio: " + (audioTime-refTime).ToString() + ";length=" + audioSample.Length.ToString());
                         lastWriteTime = audioTime - refTime;
                         writeSample(PayloadType.dynamicAudio, audioSample, (ulong)(audioTime - refTime + offset),newstream, keyframe, discontinuity);
                         audioSample = null;
@@ -537,7 +537,7 @@ namespace ArchiveTranscoder
                         //write video
                         if (refTime == 0)
                             refTime = videoTime;
-                        //Debug.WriteLine("Write video: " + (videoTime-refTime).ToString() + ";length=" + videoSample.Length.ToString());
+                        Debug.WriteLine("Write video: " + (videoTime-refTime).ToString() + ";length=" + videoSample.Length.ToString());
                         lastWriteTime = videoTime - refTime;
                         writeSample(PayloadType.dynamicVideo, videoSample, (ulong)(videoTime - refTime + offset), newstream, keyframe, discontinuity);
                         videoSample = null;
@@ -548,7 +548,7 @@ namespace ArchiveTranscoder
                 {
                     if (refTime == 0)
                         refTime = audioTime;
-                    //Debug.WriteLine("Write audio: " + (audioTime-refTime).ToString() + ";length=" + audioSample.Length.ToString());
+                    Debug.WriteLine("Write audio: " + (audioTime-refTime).ToString() + ";length=" + audioSample.Length.ToString());
                     lastWriteTime = audioTime - refTime;
                     writeSample(PayloadType.dynamicAudio, audioSample, (ulong)(audioTime - refTime + offset), newstream, keyframe, discontinuity);
                     audioSample = null;
@@ -557,7 +557,7 @@ namespace ArchiveTranscoder
                 {
                     if (refTime == 0)
                         refTime = videoTime;
-                    //Debug.WriteLine("Write video: " + (videoTime-refTime).ToString() + ";length=" + videoSample.Length.ToString());
+                    Debug.WriteLine("Write video: " + (videoTime-refTime).ToString() + ";length=" + videoSample.Length.ToString());
                     lastWriteTime = videoTime - refTime;
                     writeSample(PayloadType.dynamicVideo, videoSample, (ulong)(videoTime - refTime + offset), newstream, keyframe, discontinuity);
                     videoSample = null;
